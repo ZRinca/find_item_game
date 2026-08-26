@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Phaser + div-сцены</title>
+    
+    <style>
+        /* Убраны дублирующиеся блоки, оставлен только fullscreen */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+        }
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* display: none; */
+            z-index: 10;
+        }
+        .scene.hidden {
+            display: none !important;
+        }
+        .scene img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            z-index: 0;
+        }
+        .find-item {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            border: 3px solid greenyellow;
+            border-radius: 50%;
+        }
+        .item {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: red;
+        }
+        .figure {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            top: 150px;
+            left: 200px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        .red-square { background: red; }
+        .green-circle {
+            background: green;
+            border-radius: 50%;
+        }
+        #scene2 {
+            background: #2a2a2a;
+        }
+    </style>
+
+    <!-- toast style -->
+    <style>
+        #toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #8B4513;
+        color: #fff;
+        padding: 14px 28px;
+        border-radius: 40px;
+        font-family: sans-serif;
+        font-size: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        z-index: 999;
+        white-space: nowrap;
+        }
+        #toast.show {
+        opacity: 1;
+        }
+    </style>
+
+    <!-- Button style -->
+     <style>
+        button {
+            /* position:absolute; */
+            padding: 16px 40px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #fff;
+            background: #2563eb;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative; z-index: 2;
+        }
+        button:hover {
+            transform: scale(1.04);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.4);
+        }
+        button:active {
+            transform: scale(0.96);
+        }
+     </style>
+
+    <!-- style for label h1 -->
+    <style>
+        h1 {
+            font-size: 100px;
+            position: relative; z-index: 3;
+            color: #fff;
+        }
+    </style>
+
+    <!-- Scene menu -->
+    <style>
+        #SceneMenu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="toast">Привет! Это сообщение.</div>
+        <div id="scene1" class="scene active">
+            <img src="image/background/item_garden.png">
+
+            <!-- apple -->
+            <div style="top: 100px; left: 150;" class="item" id="apple" onclick="findItem('apple')"></div>
+            
+            <div class="figure red-square" id="square"></div>
+        </div>
+        <div id="SceneMenu" class="scene">
+            <img src="image/background/menu.png">
+
+            <button id="startGame">Начать игру</button>
+            <button id="Settings">Настройки</button>
+            <button id="quit">Выход</button>
+
+            <h1 style="top: 155px;">Сыщик</h1>
+        </div>
+        <div id="scene2" class="scene">
+            <img src="image/background/item_country_house.png">
+
+            <!-- apple -->
+            <div style="top: 100px; left: 150;" class="item" id='apple' onclick="findItem('apple')"></div>
+
+            <div style="top: 150px; left: 200;" class="find-item"></div>
+            <div class="figure green-circle" id="circle"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    <script>
+
+        var data = {
+            "scene1": {
+                item: {
+                    'bell': false,
+                    'keys': false,
+                    'cactus': false,
+                    'apple': false,
+                    'hat': false,
+                    'scissors': false,
+                    'spotting_scope': false
+                },
+                sceneCompleted: false
+            },
+            "scene2": {
+                item: {
+                    'key': false,
+                    'robot': false,
+                    'kettle': false,
+                    'book': false,
+                    'butterfly': false,
+                    'magnifying_glass': false,
+                    'teddy_bear': false,
+                    'boat': false,
+                    'star': false,
+                },
+                sceneCompleted: false
+            },
+        };
+
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            t.textContent=text;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function findItem(item) {
+            const activeDiv = document.querySelector('.scene.active');
+
+            if (!activeDiv) {return}
+            id = activeDiv.id;
+
+            data_item = data[id].item[item]
+
+            if (data_item) {
+                showToast('Вы уже нашли этот предмет!');
+                return;
+            } else {
+                showToast('Вы нашли предмет!');
+                data[id].item[item] = true;
+            }
+
+            const el = activeDiv.querySelector(`#${item}`);
+
+            el.classList.replace('item', 'find-item')
+
+        };
+
+        class SceneMenu extends Phaser.Scene {
+            constructor() { super('SceneMenu'); }
+
+            create() {
+                document.getElementById('SceneMenu').classList.remove('hidden');
+                document.getElementById('startGame').onclick = () => {
+                    this.scene.start('Scene1');
+                }
+                document.getElementById('scene1').classList.add('hidden');
+                document.getElementById('scene2').classList.add('hidden');
+                document.getElementById('square').onclick = () => {
+                    this.scene.start('Scene2');
+                };
+            }
+
+        }
+
+        class Scene1 extends Phaser.Scene {
+            constructor() { super('Scene1'); }
+            create() {
+                console.log('Scene1 создалась!');
+                document.getElementById('scene1').classList.remove('hidden');
+                document.getElementById('scene2').classList.add('hidden');
+                document.getElementById('SceneMenu').classList.add('hidden');
+                document.getElementById('square').onclick = () => {
+                    this.scene.start('Scene2');
+                };
+            }
+        }
+        class Scene2 extends Phaser.Scene {
+            constructor() { super('Scene2'); }
+            create() {
+                document.getElementById('scene2').classList.remove('hidden');
+                document.getElementById('scene1').classList.add('hidden');
+                document.getElementById('SceneMenu').classList.add('hidden');
+                document.getElementById('circle').onclick = () => {
+                    this.scene.start('Scene1');
+                };
+            }
+        }
+        const config = {
+            type: Phaser.AUTO,
+            scale: {
+                mode: Phaser.Scale.EXACT_FIT,
+                width: 800,
+                height: 600,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            parent: 'game-container',
+            scene: [SceneMenu, Scene1, Scene2],
+        };
+        new Phaser.Game(config);
+    </script>
+</body>
+</html>
