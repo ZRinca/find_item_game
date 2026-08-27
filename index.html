@@ -38,19 +38,6 @@
             object-fit: fill;
             z-index: 0;
         }
-        .find-item {
-            position: absolute;
-            width: 25px;
-            height: 25px;
-            border: 3px solid greenyellow;
-            border-radius: 50%;
-        }
-        .item {
-            position: absolute;
-            width: 25px;
-            height: 25px;
-            background-color: red;
-        }
         .figure {
             position: absolute;
             width: 100px;
@@ -67,6 +54,25 @@
         }
         #scene2 {
             background: #2a2a2a;
+        }
+    </style>
+
+
+    <!-- find item -->
+    <style>
+        .find-item {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            box-sizing: border-box;
+            border: 3px solid greenyellow;
+            border-radius: 50%;
+        }
+        .item {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background-color: red;
         }
     </style>
 
@@ -143,14 +149,7 @@
 <body>
     <div id="game-container">
         <div id="toast">Привет! Это сообщение.</div>
-        <div id="scene1" class="scene active">
-            <img src="image/background/item_garden.png">
 
-            <!-- apple -->
-            <div style="top: 100px; left: 150;" class="item" id="apple" onclick="findItem('apple')"></div>
-            
-            <div class="figure red-square" id="square"></div>
-        </div>
         <div id="SceneMenu" class="scene">
             <img src="image/background/menu.png">
 
@@ -160,18 +159,81 @@
 
             <h1 style="top: 155px;">Сыщик</h1>
         </div>
+
+        <div id="SceneLevels" class="scene">
+            <button id="lvl1"> 1-уровень </button>
+            <button id="lvl2"> 2-уровень </button>
+        </div>
+
+        <div id="scene1" class="scene active">
+            <img src="image/background/item_garden.png">
+
+            <!-- apple -->
+            <div style="top: 100px; left: 150;" class="item" id="apple" onclick="findItem('apple')"></div>
+            
+            <div class="figure red-square" id="square"></div>
+        </div>
         <div id="scene2" class="scene">
             <img src="image/background/item_country_house.png">
 
             <!-- apple -->
-            <div style="top: 100px; left: 150;" class="item" id='apple' onclick="findItem('apple')"></div>
+            <div style="top: 65%; left: 50%;" class="item" id='apple' onclick="findItem('apple')"></div>
 
-            <div style="top: 150px; left: 200;" class="find-item"></div>
-            <div class="figure green-circle" id="circle"></div>
+            <!-- butterfly -->
+            <div style="top: 45%; left: 20.7%;" class="item" id='butterfly' onclick="findItem('butterfly')"></div>
+            
+            <!-- boat -->
+            <div style="top: 30%; left: 81%;" class="item" id='boat' onclick="findItem('boat')"></div>
+
+            <!-- horseshoe -->
+             <div style="top: 17%; left: 71%;" class="item" id='horseshoe' onclick="findItem('horseshoe')"></div>
+
+            <!-- watering_can -->
+            <div style="top: 75%; left: 18%;" class="item" id='watering_can' onclick="findItem('watering_can')"></div>
+
+            <!-- lamp -->
+            <div style="top: 65%; left: 32.5%;" class="item" id='lamp' onclick="findItem('lamp')"></div>
+
+            <!-- teddy_bear -->
+            <div style="top: 50%; left: 15%;" class="item" id='teddy_bear' onclick="findItem('teddy_bear')"></div>
+              
+
+            <!-- <div style="top: 150px; left: 200;" class="find-item"></div> -->
+            <!-- <div class="figure green-circle" id="circle"></div> -->
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
     <script>
+
+        var language = {
+            en:{
+                nameGame:'',
+                levels:'',
+                menu: {
+                    startGame:'',
+                    Settings: '',
+                    quit: '',
+                }
+            },
+            ru:{
+                nameGame:'',
+                levels:'',
+                menu: {
+                    startGame:'',
+                    Settings: '',
+                    quit: '',
+                }
+            },
+            tu:{
+                nameGame:'',
+                levels:'',
+                menu: {
+                    startGame:'',
+                    Settings: '',
+                    quit: '',
+                }
+            },
+        };
 
         var data = {
             "scene1": {
@@ -189,14 +251,13 @@
             "scene2": {
                 item: {
                     'key': false,
-                    'robot': false,
-                    'kettle': false,
-                    'book': false,
                     'butterfly': false,
-                    'magnifying_glass': false,
                     'teddy_bear': false,
                     'boat': false,
-                    'star': false,
+                    'apple': false,
+                    'horseshoe': false,
+                    'watering_can': false,
+                    'lamp': false,
                 },
                 sceneCompleted: false
             },
@@ -228,50 +289,76 @@
 
             const el = activeDiv.querySelector(`#${item}`);
 
+            console.log(el);
+
             el.classList.replace('item', 'find-item')
 
         };
+
+        function hiddenScene(scene) {
+            document.querySelectorAll('.scene').forEach((el) => {
+                el.classList.add('hidden');
+                el.classList.remove('active'); 
+            })
+            document.getElementById(scene).classList.remove('hidden')
+            document.getElementById(scene).classList.add('active') 
+        }
 
         class SceneMenu extends Phaser.Scene {
             constructor() { super('SceneMenu'); }
 
             create() {
-                document.getElementById('SceneMenu').classList.remove('hidden');
+                hiddenScene('SceneMenu');
                 document.getElementById('startGame').onclick = () => {
-                    this.scene.start('Scene1');
-                }
-                document.getElementById('scene1').classList.add('hidden');
-                document.getElementById('scene2').classList.add('hidden');
-                document.getElementById('square').onclick = () => {
-                    this.scene.start('Scene2');
+                    this.scene.start('SceneLevels');
                 };
+                // document.getElementById('square').onclick = () => {
+                //     this.scene.start('Scene2');
+                // };
             }
 
         }
 
+        class SceneLevels extends Phaser.Scene {
+            constructor() { 
+                super('SceneLevels');
+            }
+
+            create() {
+                hiddenScene('SceneLevels');
+
+                document.getElementById('lvl1').onclick = ()=>{
+                    this.scene.start('Scene1');
+                };
+                
+                document.getElementById('lvl2').onclick = ()=>{
+                    this.scene.start('Scene2');
+                };
+
+            }
+        }
+        
         class Scene1 extends Phaser.Scene {
             constructor() { super('Scene1'); }
+
             create() {
-                console.log('Scene1 создалась!');
-                document.getElementById('scene1').classList.remove('hidden');
-                document.getElementById('scene2').classList.add('hidden');
-                document.getElementById('SceneMenu').classList.add('hidden');
+                hiddenScene('scene1');
                 document.getElementById('square').onclick = () => {
                     this.scene.start('Scene2');
                 };
             }
         }
+        
         class Scene2 extends Phaser.Scene {
             constructor() { super('Scene2'); }
             create() {
-                document.getElementById('scene2').classList.remove('hidden');
-                document.getElementById('scene1').classList.add('hidden');
-                document.getElementById('SceneMenu').classList.add('hidden');
+                hiddenScene('scene2');
                 document.getElementById('circle').onclick = () => {
                     this.scene.start('Scene1');
                 };
             }
         }
+        
         const config = {
             type: Phaser.AUTO,
             scale: {
@@ -281,7 +368,7 @@
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
             parent: 'game-container',
-            scene: [SceneMenu, Scene1, Scene2],
+            scene: [Scene2, SceneMenu, SceneLevels, Scene1],
         };
         new Phaser.Game(config);
     </script>
