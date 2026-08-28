@@ -176,6 +176,8 @@
         <div id="scene2" class="scene">
             <img src="image/background/item_country_house.png">
 
+            <button onclick="backToTheMenu()">Меню</button>
+
             <!-- apple -->
             <div style="top: 65%; left: 50%;" class="item" id='apple' onclick="findItem('apple')"></div>
 
@@ -353,9 +355,9 @@
             constructor() { super('Scene2'); }
             create() {
                 hiddenScene('scene2');
-                document.getElementById('circle').onclick = () => {
-                    this.scene.start('Scene1');
-                };
+                // document.getElementById('circle').onclick = () => {
+                //     this.scene.start('Scene1');
+                // };
             }
         }
         
@@ -368,9 +370,14 @@
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
             parent: 'game-container',
-            scene: [Scene2, SceneMenu, SceneLevels, Scene1],
+            scene: [SceneMenu, SceneLevels, Scene1, Scene2],
         };
-        new Phaser.Game(config);
+        game = new Phaser.Game(config);
+
+        function backToTheMenu() {
+            game.scene.start('SceneMenu')
+        }        
+
     </script>
 </body>
 </html>
